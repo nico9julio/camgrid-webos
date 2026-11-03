@@ -75,6 +75,7 @@ function sendBinaryTo(client, streamIndex, buf) {
 
 class Session {
   constructor(index, id, url) {
+    this.destroyed = false;
     this.index = index;
     this.id = id;
     this.url = url;
@@ -93,6 +94,7 @@ class Session {
   }
 
   setState(state, detail) {
+    if (this.destroyed) return;
     this.state = state;
     this.detail = detail || '';
     sendText(JSON.stringify({ type: 'streamstate', stream: this.index, id: this.id, state: state, detail: this.detail }));
@@ -274,6 +276,7 @@ class Session {
   _stopKeepalive() { if (this.keepaliveTimer) { clearInterval(this.keepaliveTimer); this.keepaliveTimer = null; } }
 
   destroy() {
+    this.destroyed = true;
     this._stopKeepalive();
     if (this.sock) { try { this.sock.destroy(); } catch (e) { /* ignore */ } this.sock = null; }
     this.muxer = null;
@@ -293,7 +296,8 @@ service.register('start', (msg) => {
   startWebSocketServer((err) => {
     if (err) { msg.respond({ returnValue: false, errorText: 'WS server failed: ' + err.message }); return; }
     if (msg.payload && (msg.payload.cameras || msg.payload.url)) {
-      applyConfig(msg.payload.cameras || [{ id: 'cam', url: msg.payload.url, stream: 0 }]);
+      teardownSessions();
+      applyConfig((msg.payload.cameras || [{ id: 'cam', url: msg.payload.url, stream: 0 }]).filter((c) => c && c.url).slice(0, 1));
     }
     if (!diagTimer) startDiag();
     msg.respond({ returnValue: true, wsPort: WS_PORT, subscribed: !!msg.isSubscription });
@@ -303,7 +307,7 @@ service.register('start', (msg) => {
 // configure: set the desired camera set ({cameras:[{id,url,stream},...]}). Diffs
 // against running sessions — keeps unchanged ones, starts new, stops removed.
 service.register('configure', (msg) => {
-  const cams = msg.payload.cameras || [];
+  const cams = (msg.payload.cameras || []).filter((c) => c && c.url).slice(0, 1);
   log('[Luna] configure', cams.length, 'stream(s)');
   teardownSessions();
   applyConfig(cams);

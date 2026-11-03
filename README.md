@@ -1,44 +1,31 @@
 # CamGrid for LG webOS
 
-CamGrid is a rooted LG webOS application for viewing up to four H.264 RTSP
-camera streams. It supports optional camera slots, selectable one-to-four
-camera layouts, and a user-selected default layout.
+CamGrid is a rooted LG webOS application for viewing up to four H.264 RTSP camera streams. It plays one camera at a time, full screen, and uses the TV's native video element. Remote buttons 1–4 switch cameras; the direction buttons temporarily reveal the camera name and Settings button, which fade after three seconds.
 
-## Layout
+## Project files
 
-- `index.html`: TV interface and camera grid.
-- `js/app.js`: layout, settings, local persistence, and video playback.
-- `services/com.camgrid.app.service/`: local webOS service that connects to
-  RTSP cameras and forwards fragmented MP4 data to the app.
+- `index.html`: full-screen TV interface and settings panel.
+- `js/app.js`: camera selection, playback, remote control, and local settings storage.
+- `services/com.camgrid.app.service/`: webOS service that connects to RTSP cameras and forwards fragmented MP4 data to the app. It keeps at most one camera session active.
 - `appinfo.json`: webOS application manifest.
-- `mixed-test.cjs`: temporary diagnostic experiment for hardware/software
-  playback; it is not part of the normal runtime.
-- `verify-aliases.cjs`: service-level regression check for duplicated camera
-  outputs.
-- `camgrid-dist/`: local build output. Packages are intentionally ignored by
-  Git.
+- `mixed-test.cjs`: diagnostic experiment; it is not part of normal playback.
+- `camgrid-dist/`: local package output, excluded from Git.
 
-## Development
+## Build
 
-Install the service dependency from its directory:
+Install the service dependencies from its directory:
 
 ```powershell
+cd services/com.camgrid.app.service
 npm ci --omit=dev
 ```
 
-Build an IPK with webOS OSE `ares-package` by staging the app files and the
-service directory. Keep the generated IPK outside version control.
+Use webOS OSE `ares-package` to package the app files together with the service directory. Stage the app files (`appinfo.json`, `index.html`, icons, and `js/`) and keep the generated IPK in `camgrid-dist/`.
 
-## Camera credentials
+## Camera settings and privacy
 
-Camera URLs, usernames, and passwords are entered on the TV and stored in the
-TV app's local storage. Do not commit them, paste them into source files, or
-put them in issue reports. The repository contains no camera configuration.
+Enter camera RTSP URLs in the app on the TV. The app stores them in that TV's local storage. Do not add camera URLs, usernames, passwords, or other credentials to this repository. The repository contains no camera configuration.
 
-## Current limitations
+## Playback note
 
-The webOS TV tested here may not advance multiple native video decoders at the
-same time. A hardware path plus a software path can run concurrently, but the
-software path may show incomplete or incorrectly coloured frames depending on
-the camera stream.
-
+CamGrid sends the H.264 stream through MediaSource to the TV's native video element and does not decode video in application JavaScript. Hardware decoding depends on the TV model and stream format.
