@@ -1,0 +1,12 @@
+{
+  "id": "com.camgrid.app.service",
+  "description": "RTSP proxy service for TPlayer",
+  "engine": "node",
+  "executable": "index.js",
+  "services": [
+    {
+      "name": "com.camgrid.app.service"
+    }
+  ]
+}
+

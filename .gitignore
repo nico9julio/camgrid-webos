@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+*.ipk
+*.log
+.env
+.env.*
+config.local.*
+local-config.*
+
+# Camera URLs and credentials must stay on the TV's local storage.
+camera-config.json
+secrets.json
+

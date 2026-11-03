@@ -1,0 +1,13 @@
+{
+  "name": "com.camgrid.app.service",
+  "version": "1.0.0",
+  "description": "RTSP proxy + WebSocket service",
+  "main": "index.js",
+  "dependencies": {
+    "ws": "^7.5.10"
+  },
+  "engines": {
+    "node": ">=6"
+  }
+}
+
